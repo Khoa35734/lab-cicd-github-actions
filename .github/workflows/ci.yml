@@ -1,0 +1,26 @@
+name: Continuous Integration (CI) Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  continuous-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y gcc make cppcheck
+
+      - name: Stage 1 - Lint
+        run: make lint
+
+      - name: Stage 2 - Build
+        run: make build
+
+      - name: Stage 3 - Test
+        run: make test
