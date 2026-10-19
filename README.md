@@ -27,22 +27,9 @@ make test
 make clean
 ```
 
-### Hạn chế của lệnh lint giữ nguyên theo đề
+### Cấu hình lint cho CI
 
-Makefile sử dụng chính xác lệnh được yêu cầu:
-
-```bash
-cppcheck --enable=all --error-exitcode=1 prime_utils.c test_app.c
-```
-
-Khi kiểm tra với Cppcheck 2.14.0 trên máy hiện tại, lệnh này trả về mã 1 vì
-`missingIncludeSystem` và `checkersReport`. Vì vậy, tùy phiên bản/cấu hình
-Cppcheck trên runner, CI có thể dừng ngay tại **Stage 1 - Lint** dù build và
-unit test đều thành công. Theo [tài liệu Cppcheck](https://cppcheck.sourceforge.io/manual.html),
-Cppcheck không cần phân tích header thư viện chuẩn để kiểm tra mã nguồn.
-
-Theo lựa chọn giữ nguyên đề bài, các thông báo này chưa được suppression
-trong Makefile. Nếu được phép điều chỉnh bài thực hành sau này, có thể dùng:
+Makefile sử dụng lệnh:
 
 ```bash
 cppcheck --enable=all --error-exitcode=1 \
@@ -50,8 +37,14 @@ cppcheck --enable=all --error-exitcode=1 \
   prime_utils.c test_app.c
 ```
 
-Lệnh thay thế đã được kiểm tra thành công trên máy hiện tại. Để quan sát riêng
-lỗi unit test tại Stage 3 trong phần mô phỏng, Stage 1 cần chạy qua trước.
+`--enable=all` kết hợp `--error-exitcode=1` có thể làm CI thất bại chỉ vì
+hai thông báo thông tin: `missingIncludeSystem` (không tìm thấy header hệ thống)
+và `checkersReport` (thống kê các checker đang hoạt động).
+Hai tùy chọn `--suppress` bỏ qua đúng hai thông báo này; các chẩn đoán khác
+vẫn làm lint thất bại theo `--error-exitcode=1`.
+Theo [tài liệu Cppcheck](https://cppcheck.sourceforge.io/manual.html), Cppcheck
+hỗ trợ suppression theo ID và không cần phân tích header thư viện chuẩn
+để kiểm tra mã nguồn.
 
 `make test` biên dịch lại rồi kiểm tra 1, 2, 3, 4, 5 và `INT_MAX` (2147483647).
 Khi thành công, chương trình in:
@@ -98,12 +91,12 @@ BROKEN_COMMIT=$(git rev-parse HEAD)
 printf 'Lưu mã commit lỗi: %s\n' "$BROKEN_COMMIT"
 git push origin main
 
-# Nếu lint chạy qua, CI sẽ thất bại tại Stage 3 - Test.
+# CI sẽ thất bại tại Stage 3 - Test vì assert cho số 4.
 # Đợi lượt CI hoàn tất trong tab Actions, rồi khôi phục.
 git revert --no-edit "$BROKEN_COMMIT"
 git push origin main
 ```
 
 Nếu mở terminal mới, thay `$BROKEN_COMMIT` bằng mã commit lỗi đã lưu.
-Sau khi khôi phục, unit test sẽ chạy thành công trở lại. Kiểm tra kết quả CI
-trong tab Actions; hạn chế lint nêu trên vẫn áp dụng.
+Sau khi khôi phục, unit test sẽ chạy thành công trở lại. Kiểm tra CI chạy xanh
+trở lại trong tab Actions.

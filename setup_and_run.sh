@@ -43,9 +43,8 @@ BROKEN_COMMIT=$(git rev-parse HEAD)
 printf 'Lưu mã commit lỗi để khôi phục: %s\n' "$BROKEN_COMMIT"
 git push origin main
 
-# 2. Mở tab Actions, đợi CI hoàn tất. Nếu lint chạy qua, CI sẽ thất bại ở Stage 3:
+# 2. Mở tab Actions, đợi CI thất bại ở Stage 3 - Test:
 #    assert(is_prime(4) == 0) sẽ thất bại.
-#    Nếu CI dừng ở Stage 1, xem hạn chế Cppcheck trong README.md.
 #    Không tạo tag release cho commit lỗi này.
 
 # 3. Khôi phục trong cùng phiên Bash:
@@ -53,5 +52,5 @@ git revert --no-edit "$BROKEN_COMMIT"
 git push origin main
 
 # Nếu đã đóng terminal, thay "$BROKEN_COMMIT" bằng mã commit lỗi đã lưu.
-# Mở tab Actions và kiểm tra CI; hạn chế lint trong README.md vẫn áp dụng.
+# Mở tab Actions và kiểm tra CI chạy xanh trở lại.
 GUIDE
